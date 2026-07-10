@@ -16,10 +16,10 @@ spec:
 apiVersion: resource.k8s.io/v1
 kind: DeviceClass
 metadata:
-  name: {{ .Values.drivers.fake.deviceClassName }}
+  name: {{ include "hami.dra.driver.fake.deviceClassName" . }}
 spec:
   selectors:
   - cel:
       expression: |-
-        device.driver == "{{ .Values.drivers.fake.driverName }}" && device.attributes["{{ .Values.drivers.fake.driverName }}"].type == "hami-gpu"
+        device.driver == "{{ include "hami.dra.driver.fake.driverName" . }}" && device.attributes["{{ include "hami.dra.driver.fake.driverName" . }}"].type == "{{ include "hami.dra.driver.fake.deviceType" . }}"
 {{- end }}

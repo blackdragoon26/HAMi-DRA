@@ -19,7 +19,10 @@ drivers:
   nvidia:
     enabled: false
   fake:
+    # For a pure fake DCU test cluster, set enabled=true and keep profile=hygon.
+    # This makes the fake plugin publish dra.hygon.com devices with type=dcu.
     enabled: false
+    profile: hygon
   dcu:
     # DeviceClass is created by k8s-dcu-dra-driver; keep false to avoid duplicate.
     enabled: false

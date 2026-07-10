@@ -37,6 +37,50 @@
 {{- end -}}
 
 {{- define "hami.dra.driver.fake.defaultConfig" -}}
+{{- if eq (include "hami.dra.driver.fake.profile" .) "hygon" -}}
+{{ include "hami.dra.driver.fake.defaultHygonConfig" . }}
+{{- else -}}
+{{ include "hami.dra.driver.fake.defaultNvidiaConfig" . }}
+{{- end -}}
+{{- end -}}
+
+{{- define "hami.dra.driver.fake.profile" -}}
+{{- .Values.drivers.fake.profile | default "nvidia" -}}
+{{- end -}}
+
+{{- define "hami.dra.driver.fake.deviceClassName" -}}
+{{- if eq (include "hami.dra.driver.fake.profile" .) "hygon" -}}
+{{- if or (not .Values.drivers.fake.deviceClassName) (eq .Values.drivers.fake.deviceClassName "fake-gpu.project-hami.io") -}}
+{{- .Values.dcuDeviceClassName -}}
+{{- else -}}
+{{- .Values.drivers.fake.deviceClassName -}}
+{{- end -}}
+{{- else -}}
+{{- .Values.drivers.fake.deviceClassName | default "fake-gpu.project-hami.io" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "hami.dra.driver.fake.driverName" -}}
+{{- if eq (include "hami.dra.driver.fake.profile" .) "hygon" -}}
+{{- if or (not .Values.drivers.fake.driverName) (eq .Values.drivers.fake.driverName "fake.dra.hami.io") -}}
+{{- .Values.dcuDraDriverName -}}
+{{- else -}}
+{{- .Values.drivers.fake.driverName -}}
+{{- end -}}
+{{- else -}}
+{{- .Values.drivers.fake.driverName | default "fake.dra.hami.io" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "hami.dra.driver.fake.deviceType" -}}
+{{- if eq (include "hami.dra.driver.fake.profile" .) "hygon" -}}
+{{- "dcu" -}}
+{{- else -}}
+{{- "hami-gpu" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "hami.dra.driver.fake.defaultNvidiaConfig" -}}
 groups:
   - name: default-a100
     devices:
@@ -88,6 +132,54 @@ groups:
 {{- end }}
 {{- end -}}
 
+{{- define "hami.dra.driver.fake.defaultHygonConfig" -}}
+groups:
+  - name: default-dcu
+    devices:
+{{- range $index := until 8 }}
+      - name: dcu-{{ $index }}
+        allowMultipleAllocations: true
+        attributes:
+          architecture:
+            string: DCU
+          attr.project-hami.io/minor:
+            int: {{ $index }}
+          brand:
+            string: Hygon
+          driverVersion:
+            version: 1.0.0
+          minor:
+            int: {{ $index }}
+          pcieBusID:
+            string: {{ printf "0000:%02x:00.0" (add 97 $index) }}
+          productName:
+            string: Hygon DCU
+          resource.kubernetes.io/pcieRoot:
+            string: pci0000:5a
+          type:
+            string: dcu
+          uuid:
+            string: {{ printf "DCU-00000000-0000-0000-0000-%012d" $index }}
+        capacity:
+          cores:
+            value: "100"
+            requestPolicy:
+              default: "100"
+              validRange:
+                max: "100"
+                min: "0"
+                step: "1"
+          memory:
+            value: 64Gi
+            requestPolicy:
+              default: 64Gi
+              validRange:
+                max: 64Gi
+                min: 1Mi
+                step: 1Mi
+{{- end }}
+{{- end -}}
+
 {{- define "hami.dra.dcu.deviceClassName" -}}
 {{- if .Values.drivers.dcu.deviceClassName -}}
 {{- .Values.drivers.dcu.deviceClassName -}}
@@ -108,7 +200,7 @@ groups:
 {{- if eq (include "hami.dra.webhook.deviceVendor" .) "hygon" -}}
 {{- .Values.dcuDeviceClassName -}}
 {{- else if and .Values.drivers.fake.enabled (not .Values.drivers.nvidia.enabled) -}}
-{{- .Values.drivers.fake.deviceClassName -}}
+{{- include "hami.dra.driver.fake.deviceClassName" . -}}
 {{- else -}}
 {{- "hami-core-gpu.project-hami.io" -}}
 {{- end -}}
@@ -118,7 +210,7 @@ groups:
 {{- if eq (include "hami.dra.webhook.deviceVendor" .) "hygon" -}}
 {{- .Values.dcuDraDriverName -}}
 {{- else if and .Values.drivers.fake.enabled (not .Values.drivers.nvidia.enabled) -}}
-{{- .Values.drivers.fake.driverName -}}
+{{- include "hami.dra.driver.fake.driverName" . -}}
 {{- else -}}
 {{- "hami-core-gpu.project-hami.io" -}}
 {{- end -}}

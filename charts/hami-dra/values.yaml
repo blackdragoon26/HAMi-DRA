@@ -188,6 +188,9 @@ drivers:
       pullSecrets: []
   fake:
     enabled: false
+    # Built-in fake device profile. Supported values: nvidia, hygon.
+    # hygon mirrors k8s-dcu-dra-driver (dra.hygon.com) for DCU DRA testing.
+    profile: nvidia
     deviceClassName: fake-gpu.project-hami.io
     image:
       registry: ghcr.io
@@ -216,7 +219,7 @@ drivers:
       name: ""
       key: config.yaml
       # Optional inline override. When empty, the chart renders a built-in default:
-      # 8 fake NVIDIA A100-SXM4-80GB devices on every node.
+      # 8 fake devices on every node using drivers.fake.profile.
       inlineData: ""
   dcu:
     # Optional external driver (k8s-dcu-dra-driver). Set enabled=true only if this chart

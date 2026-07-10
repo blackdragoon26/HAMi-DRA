@@ -37,5 +37,4 @@ else
     fi
 fi
 
-echo "✓ License headers check passed"
 exit 0
